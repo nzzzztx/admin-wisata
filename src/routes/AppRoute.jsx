@@ -3,7 +3,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import Login from "../pages/auth/Login";
 
 import Dashboard from "../pages/Dashboard";
-import Destinasi from "../pages/Destinasi";
+import Destinasi from "../pages/Destinasi/Destinasi";
 
 const AppRoute = () => {
     return (

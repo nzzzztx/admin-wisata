@@ -1,14 +1,83 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import StatCard from "../components/StatCard";
 import { MapPin, MessageCircle, TrendingUp, Tag } from "lucide-react";
 
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer
+} from "recharts";
+
 const Dashboard = () => {
 
+    const [destinasi, setDestinasi] = useState([]);
+    const navigate = useNavigate();
+    const [artikel, setArtikel] = useState([]);
+
+    useEffect(() => {
+
+        const saved = localStorage.getItem("destinasi");
+
+        if (saved) {
+            setDestinasi(JSON.parse(saved));
+        }
+
+        const savedArtikel = localStorage.getItem("artikel");
+
+        if (savedArtikel) {
+            setArtikel(JSON.parse(savedArtikel));
+        }
+
+    }, []);
+
+    const totalDestinasi = destinasi.length;
+
+    const kategoriList = [...new Set(destinasi.map(d => d.kategori))];
+
+    const totalKategori = kategoriList.length;
+
+    const totalArtikel = artikel.length;
+
+    const kategoriCount = destinasi.reduce((acc, item) => {
+
+        if (!acc[item.kategori]) {
+            acc[item.kategori] = 0;
+        }
+
+        acc[item.kategori]++;
+
+        return acc;
+
+    }, {});
+
+    /* ======================
+       DATA UNTUK CHART
+    ====================== */
+
+    const chartData = Object.keys(kategoriCount).map((kategori) => ({
+        name: kategori,
+        jumlah: kategoriCount[kategori]
+    }));
+
+
     const stats = {
-        destinasi: 9,
-        kategori: 3,
+        destinasi: totalDestinasi,
+        kategori: totalKategori,
         pengunjung: 45892,
-        ulasan: 1247,
+        artikel: totalArtikel,
     };
+
+    const aktivitasDestinasi = [...destinasi]
+        .reverse()
+        .slice(0, 4)
+        .map((item) => ({
+            title: `Destinasi baru ditambahkan ${item.nama}`,
+            time: "Baru saja"
+        }));
 
     return (
 
@@ -72,8 +141,8 @@ const Dashboard = () => {
                     />
 
                     <StatCard
-                        title="Total Ulasan"
-                        value={stats.ulasan}
+                        title="Total Artikel"
+                        value={stats.artikel}
                         icon={<MessageCircle />}
                     />
 
@@ -105,54 +174,54 @@ const Dashboard = () => {
                         </h2>
 
                         <div className="space-y-6">
-
-                            <Activity
-                                title="Destinasi baru ditambahkan Argo Wisata Kaligua"
-                                time="2 jam lalu"
-                            />
-
-                            <Activity
-                                title="Data diperbarui Ranto Canyon"
-                                time="5 jam lalu"
-                            />
-
-                            <Activity
-                                title="Artikel baru Waduk Penjalin"
-                                time="1 hari lalu"
-                            />
-
-                            <Activity
-                                title="Destinasi baru ditambahkan Telaga Ranjeng"
-                                time="2 hari lalu"
-                            />
-
+                            {aktivitasDestinasi.map((item, index) => (
+                                <Activity
+                                    key={index}
+                                    title={item.title}
+                                    time={item.time}
+                                />
+                            ))}
                         </div>
 
                     </div>
 
 
-                    {/* DISTRIBUSI */}
+                    {/* GRAFIK DISTRIBUSI */}
                     <div className="bg-white p-6 rounded-2xl shadow">
 
                         <h2 className="font-semibold text-lg mb-6">
-                            Distribusi Kategori
+                            Distribusi Kategori Wisata
                         </h2>
 
-                        <Progress label="Wisata Alam" width="66%" />
-                        <Progress label="Kuliner" width="50%" />
-                        <Progress label="Wisata Buatan" width="33%" />
+                        <div className="w-full h-[250px]">
+
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData}>
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Bar
+                                        dataKey="jumlah"
+                                        fill="#2563eb"
+                                        radius={[6, 6, 0, 0]}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+
+                        </div>
 
                         <button
+                            onClick={() => navigate("/destinasi")}
                             className="
-              mt-8
-              w-full
-              bg-blue-600
-              hover:bg-blue-700
-              text-white
-              py-3
-              rounded-xl
-              transition
-              "
+                            mt-8
+                            w-full
+                            bg-blue-600
+                            hover:bg-blue-700
+                            text-white
+                            py-3
+                            rounded-xl
+                            transition
+                            "
                         >
                             Kelola Data Destinasi
                         </button>
@@ -179,10 +248,29 @@ const Dashboard = () => {
             "
                     >
 
-                        <QuickCard color="bg-blue-100" text="Tambah Destinasi" />
-                        <QuickCard color="bg-green-100" text="Lihat Ulasan" />
-                        <QuickCard color="bg-purple-100" text="Lihat Statistik" />
-                        <QuickCard color="bg-orange-100" text="Pengaturan" />
+                        <QuickCard
+                            color="bg-blue-100"
+                            text="Tambah Destinasi"
+                            onClick={() => navigate("/destinasi?add=true")}
+                        />
+
+                        <QuickCard
+                            color="bg-green-100"
+                            text="Lihat Artikel"
+                            onClick={() => navigate("/artikel")}
+                        />
+
+                        <QuickCard
+                            color="bg-purple-100"
+                            text="Lihat Statistik"
+                            onClick={() => navigate("/statistik")}
+                        />
+
+                        <QuickCard
+                            color="bg-orange-100"
+                            text="Pengaturan"
+                            onClick={() => navigate("/pengaturan")}
+                        />
 
                     </div>
 
@@ -213,13 +301,13 @@ const Activity = ({ title, time }) => {
 
 
 
-const Progress = ({ label, width }) => {
+const Progress = ({ label, width, count }) => {
     return (
         <div className="mb-6">
 
             <div className="flex justify-between text-sm mb-2">
                 <span>{label}</span>
-                <span>3 destinasi</span>
+                <span>{count} destinasi</span>
             </div>
 
             <div className="h-3 bg-gray-200 rounded-full">
@@ -237,19 +325,20 @@ const Progress = ({ label, width }) => {
 
 
 
-const QuickCard = ({ color, text }) => {
+const QuickCard = ({ color, text, onClick }) => {
     return (
         <div
+            onClick={onClick}
             className={`
-      p-6
-      ${color}
-      rounded-xl
-      hover:scale-105
-      transition
-      cursor-pointer
-      text-center
-      font-medium
-      `}
+            p-6
+            ${color}
+            rounded-xl
+            hover:scale-105
+            transition
+            cursor-pointer
+            text-center
+            font-medium
+            `}
         >
             {text}
         </div>

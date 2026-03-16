@@ -1,52 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus, Pencil, Trash2, MapPin } from "lucide-react";
+import TambahDestinasiModal from "./TambahDestinasi";
 
 const Destinasi = () => {
 
     const [search, setSearch] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [editData, setEditData] = useState(null);
+    const [destinasi, setDestinasi] = useState(() => {
 
-    const destinasi = [
-        {
-            id: 1,
-            nama: "Gunung Bromo",
-            kategori: "Gunung",
-            harga: "Rp50.000",
-            lokasi: "Taman Nasional Bromo Tengger Semeru, Jawa Timur",
-            image: "https://source.unsplash.com/50x50/?bromo"
-        },
-        {
-            id: 2,
-            nama: "Pantai Kuta",
-            kategori: "Pantai",
-            harga: "Gratis",
-            lokasi: "Kuta, Kabupaten Badung, Bali",
-            image: "https://source.unsplash.com/50x50/?beach"
-        },
-        {
-            id: 3,
-            nama: "Taman Safari Indonesia",
-            kategori: "Wisata Buatan",
-            harga: "Rp150.000",
-            lokasi: "Bogor, Jawa Barat",
-            image: "https://source.unsplash.com/50x50/?safari"
-        },
-        {
-            id: 4,
-            nama: "Gunung Rinjani",
-            kategori: "Gunung",
-            harga: "Rp150.000",
-            lokasi: "Lombok, NTB",
-            image: "https://source.unsplash.com/50x50/?mountain"
-        },
-        {
-            id: 5,
-            nama: "Raja Ampat",
-            kategori: "Pantai",
-            harga: "Rp1.000.000",
-            lokasi: "Papua Barat",
-            image: "https://source.unsplash.com/50x50/?rajaampat"
+        const saved = localStorage.getItem("destinasi");
+
+        if (saved) {
+            return JSON.parse(saved);
         }
-    ];
+
+        return [
+            {
+                id: 1,
+                nama: "Gunung Bromo",
+                kategori: "Gunung",
+                harga: "Rp50.000",
+                lokasi: "Taman Nasional Bromo Tengger Semeru, Jawa Timur",
+                image: "https://source.unsplash.com/50x50/?bromo"
+            },
+            {
+                id: 2,
+                nama: "Pantai Kuta",
+                kategori: "Pantai",
+                harga: "Gratis",
+                lokasi: "Kuta, Kabupaten Badung, Bali",
+                image: "https://source.unsplash.com/50x50/?beach"
+            },
+            {
+                id: 3,
+                nama: "Taman Safari Indonesia",
+                kategori: "Wisata Buatan",
+                harga: "Rp150.000",
+                lokasi: "Bogor, Jawa Barat",
+                image: "https://source.unsplash.com/50x50/?safari"
+            },
+        ];
+
+    });
+
+    const handleDelete = (id) => {
+        const confirmDelete = confirm("Yakin ingin menghapus destinasi ini?");
+        if (!confirmDelete) return;
+
+        setDestinasi((prev) => prev.filter((item) => item.id !== id));
+    };
+
+    const handleEdit = (item) => {
+        setEditData(item);
+        setShowModal(true);
+    };
+
+    /* =========================
+       SYNC KE LOCALSTORAGE
+    ========================= */
+
+    useEffect(() => {
+        localStorage.setItem("destinasi", JSON.stringify(destinasi));
+    }, [destinasi]);
+
 
     const kategoriColor = (kategori) => {
         if (kategori === "Gunung") return "bg-orange-100 text-orange-600";
@@ -55,34 +72,34 @@ const Destinasi = () => {
     };
 
     const filtered = destinasi.filter((item) =>
-        item.nama.toLowerCase().includes(search.toLowerCase())
+        item.nama?.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
 
         <div
             className="
-flex flex-col
-min-h-screen
-bg-[#d7e8fe]
-w-full
-xl:ml-72
-xl:w-[calc(100%-18rem)]
-transition-all duration-300
-"
+            flex flex-col
+            min-h-screen
+            bg-[#d7e8fe]
+            w-full
+            xl:ml-72
+            xl:w-[calc(100%-18rem)]
+            transition-all duration-300
+            "
         >
 
             <div
                 className="
-flex-1
-max-w-[1600px]
-mx-auto
-px-4
-sm:px-6
-lg:px-10
-py-6
-sm:py-8
-"
+                flex-1
+                max-w-[1600px]
+                mx-auto
+                px-4
+                sm:px-6
+                lg:px-10
+                py-6
+                sm:py-8
+                "
             >
 
                 {/* HEADER */}
@@ -98,16 +115,20 @@ sm:py-8
                     </div>
 
                     <button
+                        onClick={() => {
+                            setEditData(null);
+                            setShowModal(true);
+                        }}
                         className="
-flex items-center justify-center gap-2
-bg-blue-600 hover:bg-blue-700
-text-white
-px-4 py-2
-rounded-xl
-shadow
-transition
-w-full sm:w-auto
-"
+                        flex items-center justify-center gap-2
+                        bg-blue-600 hover:bg-blue-700
+                        text-white
+                        px-4 py-2
+                        rounded-xl
+                        shadow
+                        transition
+                        w-full sm:w-auto
+                        "
                     >
                         <Plus size={16} />
                         Tambah Destinasi
@@ -133,21 +154,21 @@ w-full sm:w-auto
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="
-w-full
-border
-border-gray-200
-rounded-lg
-pl-10 pr-4 py-2
-text-sm
-focus:ring-2
-focus:ring-blue-500
-"
+                            w-full
+                            border
+                            border-gray-200
+                            rounded-lg
+                            pl-10 pr-4 py-2
+                            text-sm
+                            focus:ring-2
+                            focus:ring-blue-500
+                            "
                         />
 
                     </div>
 
 
-                    {/* MOBILE & TABLET CARD */}
+                    {/* MOBILE CARD */}
                     <div className="grid gap-4 md:hidden">
 
                         {filtered.slice(0, 6).map((item) => (
@@ -183,11 +204,17 @@ focus:ring-blue-500
 
                                     <div className="flex gap-2">
 
-                                        <button className="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg">
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg"
+                                        >
                                             <Pencil size={16} />
                                         </button>
 
-                                        <button className="bg-red-100 hover:bg-red-200 text-red-500 p-2 rounded-lg">
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="bg-red-100 hover:bg-red-200 text-red-500 p-2 rounded-lg"
+                                        >
                                             <Trash2 size={16} />
                                         </button>
 
@@ -258,11 +285,17 @@ focus:ring-blue-500
 
                                             <div className="flex justify-end gap-2">
 
-                                                <button className="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg">
+                                                <button
+                                                    onClick={() => handleEdit(item)}
+                                                    className="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg"
+                                                >
                                                     <Pencil size={16} />
                                                 </button>
 
-                                                <button className="bg-red-100 hover:bg-red-200 text-red-500 p-2 rounded-lg">
+                                                <button
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="bg-red-100 hover:bg-red-200 text-red-500 p-2 rounded-lg"
+                                                >
                                                     <Trash2 size={16} />
                                                 </button>
 
@@ -282,6 +315,39 @@ focus:ring-blue-500
                 </div>
 
             </div>
+
+            {/* MODAL */}
+            <TambahDestinasiModal
+                open={showModal}
+                editData={editData}
+                onClose={() => setShowModal(false)}
+                onSubmit={(data) => {
+
+                    if (editData) {
+
+                        setDestinasi((prev) =>
+                            prev.map((item) =>
+                                item.id === editData.id
+                                    ? { ...item, ...data }
+                                    : item
+                            )
+                        );
+
+                        setEditData(null);
+
+                    } else {
+
+                        setDestinasi((prev) => [
+                            ...prev,
+                            {
+                                id: prev.length + 1,
+                                ...data,
+                            },
+                        ]);
+
+                    }
+                }}
+            />
 
         </div>
 
