@@ -36,6 +36,7 @@ const TambahDestinasiModal = ({ open, onClose, onSubmit, editData }) => {
 
         onSubmit(data);
         onClose();
+        showNotif(`Destinasi ${data.nama} berhasil ditambahkan`, "success");
     };
 
     useEffect(() => {

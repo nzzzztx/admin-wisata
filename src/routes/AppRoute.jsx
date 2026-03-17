@@ -4,6 +4,7 @@ import Login from "../pages/auth/Login";
 
 import Dashboard from "../pages/Dashboard";
 import Destinasi from "../pages/Destinasi/Destinasi";
+import Artikel from "../pages/Artikel/Artikel";
 
 const AppRoute = () => {
     return (
@@ -17,6 +18,7 @@ const AppRoute = () => {
 
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/destinasi" element={<Destinasi />} />
+                <Route path="/artikel" element={<Artikel />} />
 
             </Route>
 

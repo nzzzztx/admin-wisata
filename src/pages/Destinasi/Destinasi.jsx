@@ -7,6 +7,8 @@ const Destinasi = () => {
     const [search, setSearch] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editData, setEditData] = useState(null);
+    const [notif, setNotif] = useState(null);
+
     const [destinasi, setDestinasi] = useState(() => {
 
         const saved = localStorage.getItem("destinasi");
@@ -44,16 +46,32 @@ const Destinasi = () => {
 
     });
 
+    const showNotif = (message, type = "success") => {
+
+        setNotif({ message, type });
+
+        setTimeout(() => {
+            setNotif(null);
+        }, 2500);
+    };
+
     const handleDelete = (id) => {
+
+        const item = destinasi.find(d => d.id === id);
+
         const confirmDelete = confirm("Yakin ingin menghapus destinasi ini?");
         if (!confirmDelete) return;
 
         setDestinasi((prev) => prev.filter((item) => item.id !== id));
+
+        saveActivity(`Destinasi dihapus ${item.nama}`);
+        showNotif(`Destinasi ${item.nama} berhasil dihapus`, "delete");
     };
 
     const handleEdit = (item) => {
         setEditData(item);
         setShowModal(true);
+        // ❌ notif edit DIHAPUS dari sini (karena belum submit)
     };
 
     /* =========================
@@ -75,6 +93,21 @@ const Destinasi = () => {
         item.nama?.toLowerCase().includes(search.toLowerCase())
     );
 
+    const saveActivity = (title) => {
+
+        const saved = JSON.parse(localStorage.getItem("aktivitas")) || [];
+
+        const newActivity = {
+            title,
+            time: "Baru saja",
+            date: Date.now()
+        };
+
+        const updated = [newActivity, ...saved].slice(0, 10);
+
+        localStorage.setItem("aktivitas", JSON.stringify(updated));
+    };
+
     return (
 
         <div
@@ -91,15 +124,15 @@ const Destinasi = () => {
 
             <div
                 className="
-                flex-1
-                max-w-[1600px]
-                mx-auto
-                px-4
-                sm:px-6
-                lg:px-10
-                py-6
-                sm:py-8
-                "
+    flex-1
+    max-w-[1600px]
+    mx-auto
+    px-4
+    sm:px-6
+    lg:px-10
+    py-6
+    sm:py-8
+    "
             >
 
                 {/* HEADER */}
@@ -136,7 +169,6 @@ const Destinasi = () => {
 
                 </div>
 
-
                 {/* CARD */}
                 <div className="bg-white p-4 sm:p-6 rounded-2xl shadow">
 
@@ -166,7 +198,6 @@ const Destinasi = () => {
                         />
 
                     </div>
-
 
                     {/* MOBILE CARD */}
                     <div className="grid gap-4 md:hidden">
@@ -227,42 +258,35 @@ const Destinasi = () => {
 
                     </div>
 
-
                     {/* DESKTOP TABLE */}
                     <div className="hidden md:block overflow-x-auto">
 
                         <table className="w-full text-sm">
 
                             <thead className="bg-gray-50 text-gray-600">
-
                                 <tr>
-                                    <th className="text-left px-4 py-3">ID</th>
+                                    <th className="text-left px-4 py-3 w-16">ID</th>
                                     <th className="text-left px-4 py-3">Nama</th>
                                     <th className="text-left px-4 py-3">Kategori</th>
-                                    <th className="text-left px-4 py-3">Harga</th>
+                                    <th className="text-left px-4 py-3 w-28">Harga</th>
                                     <th className="text-left px-4 py-3">Lokasi</th>
-                                    <th className="text-right px-4 py-3">Aksi</th>
+                                    <th className="text-right px-4 py-3 w-28">Aksi</th>
                                 </tr>
-
                             </thead>
 
                             <tbody>
-
                                 {filtered.map((item) => (
-                                    <tr key={item.id} className="border-t hover:bg-gray-50">
+                                    <tr key={item.id} className="border-t hover:bg-gray-50 transition">
 
                                         <td className="px-4 py-4">{item.id}</td>
 
                                         <td className="px-4 py-4">
                                             <div className="flex items-center gap-3">
-
                                                 <img
                                                     src={item.image}
-                                                    className="w-10 h-10 rounded-lg object-cover"
+                                                    className="w-12 h-12 rounded-lg object-cover"
                                                 />
-
-                                                {item.nama}
-
+                                                <span className="font-medium">{item.nama}</span>
                                             </div>
                                         </td>
 
@@ -274,17 +298,15 @@ const Destinasi = () => {
 
                                         <td className="px-4 py-4">{item.harga}</td>
 
-                                        <td className="px-4 py-4">
-                                            <div className="flex items-center gap-2 text-gray-600">
+                                        <td className="px-4 py-4 text-gray-600">
+                                            <div className="flex items-center gap-2">
                                                 <MapPin size={14} />
                                                 {item.lokasi}
                                             </div>
                                         </td>
 
                                         <td className="px-4 py-4 text-right">
-
                                             <div className="flex justify-end gap-2">
-
                                                 <button
                                                     onClick={() => handleEdit(item)}
                                                     className="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg"
@@ -298,14 +320,11 @@ const Destinasi = () => {
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
-
                                             </div>
-
                                         </td>
 
                                     </tr>
                                 ))}
-
                             </tbody>
 
                         </table>
@@ -315,6 +334,22 @@ const Destinasi = () => {
                 </div>
 
             </div>
+
+            {/* NOTIF */}
+            {notif && (
+                <div
+                    className={`
+                    fixed top-5 right-5 z-50
+                    px-4 py-3 rounded-xl shadow-lg text-white
+                    transition-all duration-300
+                    ${notif.type === "success" && "bg-green-500"}
+                    ${notif.type === "edit" && "bg-blue-500"}
+                    ${notif.type === "delete" && "bg-red-500"}
+                    `}
+                >
+                    {notif.message}
+                </div>
+            )}
 
             {/* MODAL */}
             <TambahDestinasiModal
@@ -333,6 +368,9 @@ const Destinasi = () => {
                             )
                         );
 
+                        saveActivity(`Destinasi diperbarui ${data.nama}`);
+                        showNotif(`Destinasi ${data.nama} berhasil diperbarui`, "edit");
+
                         setEditData(null);
 
                     } else {
@@ -345,6 +383,8 @@ const Destinasi = () => {
                             },
                         ]);
 
+                        saveActivity(`Destinasi baru ditambahkan ${data.nama}`);
+                        showNotif(`Destinasi ${data.nama} berhasil ditambahkan`, "success");
                     }
                 }}
             />
